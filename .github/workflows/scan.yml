@@ -70,8 +70,8 @@ jobs:
         with:
           languages: ${{ steps.prepare.outputs.codeql_languages }}
           build-mode: none
+          # No source-root: the extractors run from the workspace root, so the config limits them by path instead.
           config-file: ./.github/codeql/codeql-config.yml
-          source-root: scan-target
 
       - name: CodeQL analyze
         if: steps.prepare.outputs.codeql_languages != '' && steps.precheck.outputs.blocked != 'true'

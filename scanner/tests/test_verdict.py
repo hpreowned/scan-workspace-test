@@ -43,7 +43,7 @@ class Verdict(unittest.TestCase):
         self.assertEqual(state(result, "dependency-review"), "not_applicable")
 
     def test_high_severity_codeql_result_fails(self):
-        body = sarif([("js/xss", "artifact/index.html", 12, "DOM text reinterpreted as HTML.\nmore")], {"js/xss": 7.8})
+        body = sarif([("js/xss", "scan-target/artifact/index.html", 12, "DOM text reinterpreted as HTML.\nmore")], {"js/xss": 7.8})
         result = build(results_dir({"codeql_languages": ["javascript-typescript"]}, sarifs={"javascript.sarif": body}))
         self.assertEqual(result["status"], "FAIL")
         found = result["findings"][0]
@@ -94,7 +94,7 @@ class Verdict(unittest.TestCase):
         self.assertEqual(result["findings"][0]["severity"], "deny")
 
     def test_notebook_findings_point_at_the_notebook(self):
-        body = sarif([("py/cmd", "artifact/nb/demo.ipynb.py", 3, "cmd")], {"py/cmd": 9.8})
+        body = sarif([("py/cmd", "scan-target/artifact/nb/demo.ipynb.py", 3, "cmd")], {"py/cmd": 9.8})
         inv = {"codeql_languages": ["python"], "notebooks": {"nb/demo.ipynb.py": "nb/demo.ipynb"}}
         found = build(results_dir(inv, sarifs={"python.sarif": body}))["findings"][0]
         self.assertEqual(found["file"], "nb/demo.ipynb")

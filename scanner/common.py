@@ -6,6 +6,7 @@ from pathlib import Path
 # git's well-known empty tree. The scan commit's parent must have this tree, so base...head covers the whole bundle.
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 ARTIFACT_PREFIX = "artifact/"
+CHECKOUT_PREFIX = "scan-target/"  # where scan.yml checks the bundle out
 
 # The one rule -> severity table (contracts/findings.md). Scripts emit rule ids; only verdict.py decides.
 RULES = {
@@ -31,6 +32,8 @@ def finding(rule, message, file=None, line=None):
 
 
 def strip_prefix(path):
+    """Bundle-relative path: drops the checkout directory (CodeQL reports scan-target/artifact/...) and artifact/."""
+    path = path.removeprefix(CHECKOUT_PREFIX)
     return path[len(ARTIFACT_PREFIX):] if path.startswith(ARTIFACT_PREFIX) else path
 
 
