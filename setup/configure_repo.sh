@@ -23,6 +23,7 @@ row() { # name, actual, wanted
   else printf '  DRIFT  %-44s is "%s", want "%s"\n' "$1" "$2" "$3"; DRIFT=1; fi
 }
 get() { local out; out=$(api "$1" --jq "$2") && [ -n "$out" ] && echo "$out" || echo "n/a"; }
+probe() { api "$1" >/dev/null && echo "$2" || echo "$3"; } # endpoint, value if it answers, value if it does not
 
 report() {
   local vis; vis=$(get "repos/$REPO" .visibility)
@@ -34,7 +35,7 @@ report() {
   [ "$vis" != "public" ] && row "code security licensed"      "$(get "repos/$REPO" '(.security_and_analysis.code_security // .security_and_analysis.advanced_security).status')" enabled
   [ "$vis" != "public" ] && row "forking"                     "$(get "repos/$REPO" .allow_forking)" false
   row "code scanning default setup"     "$(get "repos/$REPO/code-scanning/default-setup" .state)" not-configured
-  row "dependency graph"                "$(api "repos/$REPO/dependency-graph/sbom" --jq '"enabled"' || echo disabled)" enabled
+  row "dependency graph"                "$(probe "repos/$REPO/dependency-graph/sbom" enabled disabled)" enabled
   row "actions enabled"                 "$(get "repos/$REPO/actions/permissions" .enabled)" true
   row "allowed actions"                 "$(get "repos/$REPO/actions/permissions" .allowed_actions)" selected
   row "actions pinned to full SHA"      "$(get "repos/$REPO/actions/permissions" '.sha_pinning_required // "n/a"')" true
@@ -44,9 +45,9 @@ report() {
   row "repository secrets"              "$(get "repos/$REPO/actions/secrets" .total_count)" 0
   row "artifact and log retention days" "$(get "repos/$REPO/actions/permissions/artifact-and-log-retention" .days)" 7
   for name in scan-protect-default scan-branches scan-push-rules; do
-    row "ruleset $name" "$(api "repos/$REPO/rulesets" --jq "[.[] | select(.name==\"$name\") | .enforcement][0] // \"missing\"" || echo n/a)" active
+    row "ruleset $name" "$(get "repos/$REPO/rulesets" "[.[] | select(.name==\"$name\") | .enforcement][0] // \"missing\"")" active
   done
-  row "workflow on default branch"      "$(api "repos/$REPO/contents/.github/workflows/scan.yml" --jq '"present"' || echo missing)" present
+  row "workflow on default branch"      "$(probe "repos/$REPO/contents/.github/workflows/scan.yml" present missing)" present
 }
 
 ruleset() { # file, bypass json
