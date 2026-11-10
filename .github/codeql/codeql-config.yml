@@ -1,0 +1,7 @@
+# Used by scan.yml. Paths are relative to the workflow's source-root (scan-target/), where every bundle file
+# sits under artifact/. A config file shipped inside a bundle is never read.
+name: artifact-scan
+queries:
+  - uses: security-extended
+paths:
+  - artifact
